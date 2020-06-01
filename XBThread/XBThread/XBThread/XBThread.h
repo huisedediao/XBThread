@@ -1,15 +1,20 @@
 //
 //  XBThread.h
-//  XBThread
+//  smarthome
 //
-//  Created by xxb on 2018/8/27.
-//  Copyright © 2018年 xxb. All rights reserved.
+//  Created by xxb on 2020/5/29.
+//  Copyright © 2020 DreamCatcher. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
-@interface XBThread : NSThread
-@property (nonatomic,assign,readonly) BOOL isLoopRunning;
-+ (instancetype)threadWithName:(NSString *)name;
-- (void)stop;
+NS_ASSUME_NONNULL_BEGIN
+
+@interface XBThread : NSObject
+- (instancetype)init;
+- (instancetype)initWithName:(NSString *)name;
+- (void)invalidate;
+- (void)excuteTask:(void(^)(void))task;
 @end
+
+NS_ASSUME_NONNULL_END

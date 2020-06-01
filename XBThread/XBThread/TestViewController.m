@@ -34,8 +34,10 @@
     [button setTitle:@"back" forState:UIControlStateNormal];
 
     
-    _thread = [XBThread threadWithName:@"test"];
-    [self performSelector:@selector(startTimer) onThread:_thread withObject:nil waitUntilDone:YES];
+    _thread = [[XBThread alloc] init];
+    [_thread excuteTask:^{
+        [self startTimer];
+    }];
 
 }
 
@@ -58,7 +60,7 @@
 {
     NSLog(@"TestViewController销毁");
     [_timer stop];
-    [_thread stop];
+    [_thread invalidate];
 }
 
 - (void)back

@@ -1,33 +1,43 @@
 //
 //  XBThread.m
-//  XBThread
+//  smarthome
 //
-//  Created by xxb on 2018/8/27.
-//  Copyright © 2018年 xxb. All rights reserved.
+//  Created by xxb on 2020/5/29.
+//  Copyright © 2020 DreamCatcher. All rights reserved.
 //
 
 #import "XBThread.h"
 
+@interface XBThread ()
+{
+    NSThread *_thread;
+}
+@end
 
 @implementation XBThread
-BOOL isLoopRunning;
-CFRunLoopRef currentRunLoopRef;
 
-+ (instancetype)threadWithName:(NSString *)name
+- (instancetype)init
 {
-    XBThread *thread = [[XBThread alloc] initWithTarget:self selector:@selector(customThreadEntryPoint:) object:nil];
-    [thread start];
-    if (name.length)
+    if (self = [super init])
     {
-        [thread setName:name];
+        _thread = [[NSThread alloc] initWithTarget:self selector:@selector(threadRun:) object:nil];
+        [_thread start];
     }
-    return thread;
+    return self;
 }
 
-- (void)stop
+- (instancetype)initWithName:(NSString *)name
 {
-    isLoopRunning = NO;
-    CFRunLoopStop(currentRunLoopRef);
+    if (self = [super init])
+    {
+        _thread = [[NSThread alloc] initWithTarget:self selector:@selector(threadRun:) object:nil];
+        if (name.length)
+        {
+            [_thread setName:name];
+        }
+        [_thread start];
+    }
+    return self;
 }
 
 - (void)dealloc
@@ -35,20 +45,51 @@ CFRunLoopRef currentRunLoopRef;
     NSLog(@"XBThread 销毁");
 }
 
-+ (void)customThreadEntryPoint:(id)__unused object
+- (void)threadRun:(NSThread *)thread
 {
-    @autoreleasepool {
-        //记录
-        currentRunLoopRef = CFRunLoopGetCurrent();
-        
-        NSRunLoop *myLoop = [NSRunLoop currentRunLoop];
-        //        [myLoop addPort:[NSMachPort port] forMode:NSDefaultRunLoopMode];
-        isLoopRunning = YES; // global
-
-        while (isLoopRunning)
-        {
-            [myLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-        }
+    [[NSRunLoop currentRunLoop] addPort:[NSPort new] forMode:NSDefaultRunLoopMode];
+    while (_thread)
+    {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
     }
+    NSLog(@"XBThread ：invalidate");
 }
+
+- (void)invalidate
+{
+    if (_thread == nil) {
+        return;
+    }
+    [self performSelector:@selector(invalidateInside) onThread:_thread withObject:nil waitUntilDone:true];
+}
+
+- (void)invalidateInside
+{
+    if (_thread == nil)
+    {
+        return;
+    }
+    CFRunLoopStop(CFRunLoopGetCurrent());
+    _thread = nil;
+}
+
+- (void)excuteTask:(void (^)(void))task
+{
+    if (_thread == nil)
+    {
+        NSLog(@"XBThread ： 线程已被弃用");
+        return;
+    }
+    if (task == nil)
+    {
+        return;
+    }
+    [self performSelector:@selector(excuteTaskInSide:) onThread:_thread withObject:task waitUntilDone:true];
+}
+
+- (void)excuteTaskInSide:(void (^)(void))task
+{
+    task();
+}
+
 @end
