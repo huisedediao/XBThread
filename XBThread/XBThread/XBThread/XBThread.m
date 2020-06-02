@@ -69,8 +69,8 @@
     {
         return;
     }
-    CFRunLoopStop(CFRunLoopGetCurrent());
     _thread = nil;
+    CFRunLoopStop(CFRunLoopGetCurrent());
 }
 
 - (void)excuteTask:(void (^)(void))task
