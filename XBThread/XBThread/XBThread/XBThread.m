@@ -60,7 +60,7 @@
     if (_thread == nil) {
         return;
     }
-    [self performSelector:@selector(invalidateInside) onThread:_thread withObject:nil waitUntilDone:true];
+    [self performSelector:@selector(invalidateInside) onThread:_thread withObject:nil waitUntilDone:false];
 }
 
 - (void)invalidateInside
